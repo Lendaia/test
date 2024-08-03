@@ -1,11 +1,11 @@
 import random
 
 abc = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", " "]
-uzenet = "helloword"
+uzenet = "curiosity killed the cat"
 
 # uzenet = input("üzenet: ")
 
-kulcs = "abcdefgijklmnopqrstuvwxyzhi"
+kulcs = "abcdefgijkl"
 
 # Amennyiben random generált kulcsot szeretnénk generálni, ez az egyszerű algoritmus használható
 def randomkulcs(hossz, keszlet):
@@ -36,5 +36,3 @@ for i in range(len(uzenet)):
     if szam > 26:
         szam = szam % 27
     titkositott += abc[szam]
-
-print(titkositott)

@@ -1,3 +1,5 @@
+import copy
+
 abc = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", " "]
 words = []
 with open("words.txt", "r") as bemenet:
@@ -13,6 +15,7 @@ def kod(titkositando, karakter):
                 szamsor.append(karakter.index(j))
     return szamsor
 
+
 def egyezik(toredek, melyik, meglevo, szotar = words):
     egyezo = []
     toredek = toredek.strip()
@@ -27,22 +30,23 @@ def egyezik(toredek, melyik, meglevo, szotar = words):
     return meglevo
 
 
-def kulcs(uzenet1, uzenet2, szo, keszlet):
+def kulcs(uzenet1, uzenet2, szo, keszlet, proba):
+
     lehetoseg = ""
+    lehetosegkod = []
     fejtett1 = szo
     fejtett2 = ""
-    lehetosegkod = []
     uzenet1kod = kod(uzenet1, keszlet)
     uzenet2kod = kod(uzenet2, keszlet)
     szokod = kod(szo, keszlet)
     db = 0
-    proba = 0
-    valtozo = -1
     szavak = [[], []]
+
     if len(uzenet1) > len(uzenet2):
         hossz = len(uzenet1)
     else:
         hossz = len(uzenet2)
+
     aktualis = uzenet1kod
     aktualisb = uzenet2kod
 
@@ -61,23 +65,23 @@ def kulcs(uzenet1, uzenet2, szo, keszlet):
                 szam = (26 - lehetosegkod[i]) + aktualisb[i] + 1
             fejtett += keszlet[szam]
 
-        if szavak == egyezik(fejtett, db, szavak):
-            proba += 1
+        if szavak == egyezik(fejtett, db, copy.deepcopy(szavak)):
+            kulcs(uzenet1, uzenet2, szo, keszlet, ++proba)
         else:
-            szavak = egyezik(fejtett, db, szavak)
+            egyezik(fejtett, db, szavak)
             proba = 0
 
-        szo = szavak[db][valtozo][proba][len(fejtett):] + " "
+        szo = szavak[db][-1][proba][len(fejtett):] + " "
         szokod = kod(szo, keszlet)
 
         if db == 0:
-            fejtett2 += szavak[db][valtozo][proba] + " "
+            fejtett2 += szavak[db][-1][proba] + " "
             aktualis = uzenet2kod[(len(fejtett2) - len(szo)):len(fejtett2)]
             aktualisb = uzenet1kod[len(fejtett1):]
             db = 1
 
         else:
-            fejtett1 += szavak[db][valtozo][proba] + " "
+            fejtett1 += szavak[db][-1][proba] + " "
             aktualis = uzenet1kod[(len(fejtett1) - len(szo)):len(fejtett1)]
             aktualisb = uzenet2kod[len(fejtett2):]
             db = 0
@@ -89,4 +93,4 @@ def kulcs(uzenet1, uzenet2, szo, keszlet):
     return lehetoseg
 
 
-print(kulcs("ebtobehq nkongrxvjsmb wtmyu", "cvtlsxoagjvuyzttqk ynyxq", "early ", abc))
+print(kulcs("ebtobehq nkongrxvjsmb wtmyu", "cvtlsxoagjvuyzttqk ynyxq", "early ", abc, 0))

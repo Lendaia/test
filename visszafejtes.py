@@ -4,6 +4,7 @@ class uzenet:
     fejtett = ""
     kod = []
     szavak = []
+    betu = []
 
     def __init__(self, tartalom, kod):
         self.tartalom = tartalom
@@ -26,7 +27,7 @@ with open("words.txt", "r") as bemenet:
         words.append(i.strip())
 
 
-def egyezik(toredek, meglevo, szotar = words):
+def egyezik(toredek, szotar=words):
     egyezo = []
     toredek = toredek.strip()
 
@@ -37,10 +38,10 @@ def egyezik(toredek, meglevo, szotar = words):
     if len(egyezo) != 0:
         return egyezo
 
-    return meglevo
+    return None
 
 
-def kodra(titkositando, karakter = abc):
+def kodra(titkositando, karakter=abc):
     szamsor = []
     for i in titkositando:
         for j in karakter:
@@ -50,21 +51,23 @@ def kodra(titkositando, karakter = abc):
 
 
 uzenet1 = uzenet("ebtobehq nkongrxvjsmb wtmyu", kodra("ebtobehq nkongrxvjsmb wtmyu"))
+uzenet1.fejtett += "early "
 uzenet2 = uzenet("cvtlsxoagjvuyzttqk ynyxq", kodra("cvtlsxoagjvuyzttqk ynyxq"))
 lehetoseg = megoldas("", [])
-db = 0
-aktualis = uzenet1.kod
-aktualisb = uzenet2.kod
-
 
 if len(uzenet1.tartalom) > len(uzenet2.tartalom):
     hossz = len(uzenet1.tartalom)
 else:
     hossz = len(uzenet2.tartalom)
 
-
 def kulcs(szo, keszlet, proba):
-    global aktualis, aktualisb, db
+    db = 0
+    aktualis = uzenet1.kod
+    aktualisb = uzenet2.kod
+    problema = []
+    kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, problema)
+
+def kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, problema):
     szokod = kodra(szo)
 
     while len(lehetoseg.kod) < hossz:
@@ -82,29 +85,46 @@ def kulcs(szo, keszlet, proba):
                 szam = (26 - lehetoseg.kod[i]) + aktualisb[i] + 1
             fejtett += keszlet[szam]
 
-        if uzenet1.szavak == egyezik(fejtett, copy.deepcopy(uzenet1.szavak)):
-            kulcs(szo, keszlet, ++proba)
-
-        aktualisb.szavak.append(egyezik(fejtett, aktualisb.szavak))
-        szo = aktualisb.szavak[-1][proba][len(fejtett):] + " "
-        szokod = kodra(szo)
-
-        if db == 0:
-            uzenet2.fejtett += uzenet2.szavak[0][proba] + " "
-            aktualis = uzenet2.kod[(len(uzenet2.fejtett) - len(szo)):len(uzenet2.fejtett)]
-            aktualisb = uzenet1.kod[len(uzenet1.fejtett):]
-            db = 1
-        else:
-            uzenet1.fejtett += uzenet1.szavak[-1][proba] + " "
-            aktualis = uzenet1.kod[(len(uzenet1.fejtett) - len(szo)):len(uzenet1.fejtett)]
-            aktualisb = uzenet2.kod[len(uzenet2.fejtett):]
-            db = 0
-
         for i in lehetoseg.kod:
             lehetoseg.tartalom += abc[i]
         lehetoseg.kod = []
 
+        if egyezik(fejtett):
+            if db == 0:
+                uzenet2.betu.append(fejtett)
+                uzenet2.szavak.append(egyezik(fejtett))
+                szo = uzenet2.szavak[-1][proba][len(fejtett):] + " "
+                szokod = kodra(szo)
+
+                uzenet2.fejtett += uzenet2.szavak[-1][proba] + " "
+                aktualis = uzenet2.kod[(len(uzenet2.fejtett) - len(szo)):len(uzenet2.fejtett)]
+                aktualisb = uzenet1.kod[len(uzenet1.fejtett):]
+                db = 1
+            else:
+                uzenet1.betu.append(fejtett)
+                uzenet1.szavak.append(egyezik(fejtett))
+                szo = uzenet1.szavak[-1][proba][len(fejtett):] + " "
+                szokod = kodra(szo)
+
+                uzenet1.fejtett += uzenet1.szavak[-1][proba] + " "
+                aktualis = uzenet1.kod[(len(uzenet1.fejtett) - len(szo)):len(uzenet1.fejtett)]
+                aktualisb = uzenet2.kod[len(uzenet2.fejtett):]
+                db = 0
+
+            kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, problema)
+
+
+            #proba += 1
+            #if db == 0:
+            #    szo = uzenet2.szavak[-1][proba][len(fejtett):] + " "
+            #else:
+            #    szo = uzenet1.szavak[-1][proba][len(fejtett):] + " "
+
+        else:
+            #TODO: 'zuxy'-nál nem akarunk a call stack-ben 'bird'-ig visszalépni
+            return
+
     return lehetoseg.tartalom
 
 
-kulcs("early ", abc, 0)
+print(kulcs("early ", abc, 0))

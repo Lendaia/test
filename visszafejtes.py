@@ -7,14 +7,16 @@ class uzenet:
     betu = []
     szint = 0
 
-    def __init__(self, tartalom, kod):
+    def __init__(self, tartalom, kod, szavak, betu):
         self.tartalom = tartalom
         self.kod = kod
-
+        self.szavak = szavak
+        self.betu = betu
 
 class megoldas:
     tartalom = ""
     kod = []
+    siker = True
 
     def __init__(self, tartalom, kod):
         self.tartalom = tartalom
@@ -30,7 +32,6 @@ with open("words.txt", "r") as bemenet:
 
 def egyezik(toredek, szotar=words):
     egyezo = []
-    toredek = toredek.strip()
 
     for i in szotar:
         if i[:len(toredek)] == toredek:
@@ -51,35 +52,43 @@ def kodra(titkositando, karakter=abc):
     return szamsor
 
 
-uzenet1 = uzenet("ebtobehq nkongrxvjsmb wtmyu", kodra("ebtobehq nkongrxvjsmb wtmyu"))
-uzenet1.fejtett += "early "
-uzenet2 = uzenet("cvtlsxoagjvuyzttqk ynyxq", kodra("cvtlsxoagjvuyzttqk ynyxq"))
+uzenet1 = uzenet("bjicgfksvk", kodra("bjicgfksvk"), [["big "]], ["big "])
+uzenet1.fejtett += "big "
+uzenet2 = uzenet("acqyielvwepm", kodra("acqyielvwepm"), [], [])
 lehetoseg = megoldas("", [])
 
-if len(uzenet1.tartalom) > len(uzenet2.tartalom):
-    hossz = len(uzenet1.tartalom)
-else:
-    hossz = len(uzenet2.tartalom)
 
-def kulcs(szo, keszlet, proba):
+if len(uzenet1.tartalom) > len(uzenet2.tartalom):
+    hossz = uzenet1.tartalom
+    rovidebb = uzenet2.tartalom
+else:
+    hossz = uzenet2.tartalom
+    rovidebb = uzenet1.tartalom
+
+def kulcs(szo, keszlet):
     db = 0
     aktualis = uzenet1.kod
     aktualisb = uzenet2.kod
     flag = True
     fejtett = ""
-    kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett)
+    proba = 0
+    return kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett)
 
 def kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett):
     szokod = kodra(szo)
 
-    while len(lehetoseg.kod) < hossz:
+    while lehetoseg.siker:
         if flag:
             fejtett = ""
-            for i in range(len(szo)):
-                szam = aktualis[i] - szokod[i]
-                if szam < 0:
-                    szam = (26 - szokod[i]) + aktualis[i] + 1
-                lehetoseg.kod.append(szam)
+            if len(lehetoseg.tartalom) != len(rovidebb):
+
+                for i in range(len(szo)):
+                    szam = aktualis[i] - szokod[i]
+                    if szam < 0:
+                        szam = (26 - szokod[i]) + aktualis[i] + 1
+                    lehetoseg.kod.append(szam)
+                    if i == len(aktualis)-1:
+                        break
 
             for i in range(len(lehetoseg.kod)):
                 szam = aktualisb[i] - lehetoseg.kod[i]
@@ -106,6 +115,7 @@ def kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett):
                     aktualisb = uzenet1.kod[len(uzenet1.fejtett):]
                     uzenet2.szint += 1
                     db = 1
+
                 else:
                     uzenet1.betu.append(fejtett)
                     uzenet1.szavak.append(egyezik(fejtett))
@@ -119,22 +129,38 @@ def kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett):
                     db = 0
 
             else:
-                flag = True
                 if db == 0:
-                    szo = uzenet2.szavak[-1][proba][len(fejtett):] + " "
-                    szokod = kodra(szo)
-                    aktualis = uzenet1.kod[(len(uzenet1.fejtett) - len(szo)):len(uzenet1.fejtett)]
-                    aktualisb = uzenet2.kod[len(uzenet2.fejtett):]
-                    uzenet2.szint -= 1
-
-                else:
-                    szo = uzenet1.szavak[-1][proba][len(fejtett):] + " "
-                    szokod = kodra(szo)
+                    uzenet2.fejtett += uzenet2.szavak[-1][proba] + " "
                     aktualis = uzenet2.kod[(len(uzenet2.fejtett) - len(szo)):len(uzenet2.fejtett)]
                     aktualisb = uzenet1.kod[len(uzenet1.fejtett):]
-                    uzenet1.szint -= 1
+                    uzenet2.szint += 1
+                    db = 1
 
-            kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett)
+                else:
+                    uzenet1.fejtett += uzenet1.szavak[-1][proba] + " "
+                    aktualis = uzenet1.kod[(len(uzenet1.fejtett) - len(szo)):len(uzenet1.fejtett)]
+                    aktualisb = uzenet2.kod[len(uzenet2.fejtett):]
+                    uzenet1.szint += 1
+                    db = 0
+            if len(hossz) == len(uzenet1.fejtett) or len(hossz) == len(uzenet2.fejtett):
+                for i in range(len(szo)):
+                    szam = aktualis[i] - szokod[i]
+                    if szam < 0:
+                        szam = (26 - szokod[i]) + aktualis[i] + 1
+                    lehetoseg.kod.append(szam)
+                    if i == len(aktualis)-1:
+                        break
+
+                for i in lehetoseg.kod:
+                    lehetoseg.tartalom += abc[i]
+                lehetoseg.kod = []
+                lehetoseg.siker = False
+                return lehetoseg.tartalom
+
+            kulcs_priv(szo, keszlet, 0, aktualis, aktualisb, db, True, fejtett)
+            if not lehetoseg.siker:
+                return lehetoseg.tartalom
+
             flag = False
             if db == 0:
                 counter = 0
@@ -149,7 +175,7 @@ def kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett):
                 for i in range(len(uzenet2.fejtett[:-1])):
                     if uzenet2.fejtett[i] == " ":
                         counter += 1
-                        if counter == len(uzenet2.betu):
+                        if counter == len(uzenet2.betu)-1:
                             uzenet2.fejtett = uzenet2.fejtett[:i+1]
                             break
 
@@ -164,4 +190,4 @@ def kulcs_priv(szo, keszlet, proba, aktualis, aktualisb, db, flag, fejtett):
     return lehetoseg.tartalom
 
 
-print(kulcs("early ", abc, 0))
+print(kulcs("big ", abc))
